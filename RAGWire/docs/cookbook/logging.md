@@ -1,0 +1,47 @@
+# Logging Setup
+
+## Write Logs to a File
+
+Useful in production or scheduled jobs where you want a persistent audit trail.
+
+```yaml
+logging:
+  level: "INFO"
+  colored: false
+  console_output: true
+  log_file: "logs/rag.log"
+```
+
+Or in code:
+
+```python
+from ragwire import setup_logging
+
+logger = setup_logging(log_level="INFO", log_file="logs/rag.log")
+```
+
+## Colored Output for Development
+
+```python
+from ragwire import setup_colored_logging
+
+logger = setup_colored_logging(log_level="DEBUG")
+```
+
+Or via config:
+
+```yaml
+logging:
+  level: "DEBUG"
+  colored: true
+```
+
+## Log Levels
+
+| Level | Use When |
+|---|---|
+| `DEBUG` | Development. Shows every step: loading, chunking, embedding, storing. |
+| `INFO` | Production. Shows ingestion stats, retrieval queries and warnings. |
+| `WARNING` | Minimal. Only problems and skipped files. |
+| `ERROR` | Errors only |
+

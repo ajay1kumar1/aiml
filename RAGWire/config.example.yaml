@@ -1,0 +1,168 @@
+# RAGWire Configuration Example
+# ==============================
+# Copy this file to config.yaml and edit for your environment.
+
+# =================================================================
+# Document Loader
+# =================================================================
+loader:
+  extensions: [".pdf", ".docx", ".xlsx", ".pptx", ".txt", ".md"]
+
+# =================================================================
+# Text Splitter
+# =================================================================
+splitter:
+  chunk_size: 10000
+  chunk_overlap: 2000
+  strategy: "markdown"   # "markdown" | "recursive" | "page"
+
+  # strategy "page": exactly one chunk per page, never sub-split, merged or
+  # overlapped, so every chunk cites a page the reader can open.
+  # Chunks carry page_number, page_total and (when known) page_label.
+  #   - PDF: one chunk per physical page          (extracted with pypdf)
+  #   - PPTX: one chunk per slide, title as label (extracted with python-pptx)
+  #   - .txt/.md: split on page_marker if present, else markdown headings,
+  #     else the whole file is a single page
+  #   - HTML: split on headings; other formats become a single page
+  # chunk_size and chunk_overlap do not apply to this strategy.
+  # page_marker: "<!-- pagebreak -->"  # marker separating pages in text files
+  # page_heading_level: 2              # deepest heading that starts a new page
+
+# =================================================================
+# Ingestion (all optional, safe defaults shown)
+# =================================================================
+# ingestion:
+#   workers: 1            # Documents prepared in parallel. Loading, splitting and
+#                         # the LLM metadata call dominate ingest time, so raising
+#                         # this speeds up large batches. Writes stay sequential.
+#                         # Keep at 1 for local file storage (single-process only).
+#   batch_size: 64        # Chunks per write request
+#   retries: 2            # Retries per write, with exponential backoff
+#   replace_changed: true # If a file changed since last ingest, delete the old
+#                         # version's chunks instead of storing both
+#   dedup_chunks: false   # Drop repeated chunks within a document (boilerplate)
+
+# =================================================================
+# Embedding Model
+# =================================================================
+embeddings:
+  # --- Ollama (local, no API key) ---
+  provider: "ollama"
+  model: "qwen3-embedding:0.6b"
+  base_url: "http://localhost:11434"
+
+  # --- OpenAI ---
+  # provider: "openai"
+  # model: "text-embedding-3-small"
+
+  # --- HuggingFace (local) ---
+  # provider: "huggingface"
+  # model_name: "sentence-transformers/all-MiniLM-L6-v2"
+
+  # --- Google ---
+  # provider: "google"
+  # model: "models/embedding-001"
+
+  # --- OpenRouter embeddings (official openrouter SDK; needs: pip install "ragwire[openrouter]") ---
+  # provider: "openrouter"
+  # model: "nvidia/llama-nemotron-embed-vl-1b-v2:free"
+  # api_key: "${OPENROUTER_API_KEY}"   # or set the OPENROUTER_API_KEY env var
+  # dimensions: 2048                   # optional, only if the model supports it
+
+# =================================================================
+# LLM: used for metadata extraction on every ingested document
+# =================================================================
+llm:
+  # --- Ollama (local) ---
+  provider: "ollama"
+  model: "qwen3.5:9b"
+  base_url: "http://localhost:11434"
+  num_ctx: 16384         # Context window. Must fit your largest chunk.
+
+  # --- OpenAI ---
+  # provider: "openai"
+  # model: "gpt-5.4-nano"
+
+  # --- OpenRouter (uses ChatOpenRouter; needs: pip install "ragwire[openrouter]") ---
+  # provider: "openrouter"
+  # model: "poolside/laguna-m.1:free"
+  # api_key: "${OPENROUTER_API_KEY}"   # or set the OPENROUTER_API_KEY env var
+
+# =================================================================
+# Metadata Extraction (optional)
+# =================================================================
+# metadata:
+#   config_file: "metadata.yaml"   # Path to a custom metadata YAML (see metadata.example.yaml)
+#                                  # Relative paths resolve against this config file's directory
+#                                  # If omitted, the built-in financial fields are used:
+#                                  # company_name, doc_type, fiscal_quarter, fiscal_year
+
+# =================================================================
+# Vector Store (Qdrant)
+# =================================================================
+vectorstore:
+  url: "http://localhost:6333"
+  # api_key: "${QDRANT_API_KEY}"   # For Qdrant Cloud
+  # url: "./qdrant_storage"        # For local file-based storage
+  collection_name: "financial_docs"
+  use_sparse: true       # true enables hybrid search (requires: pip install fastembed)
+  force_recreate: false  # Set true ONLY to wipe and rebuild the collection
+
+# =================================================================
+# Retriever
+# =================================================================
+retriever:
+  search_type: "hybrid"   # "similarity" | "mmr" | "hybrid" (hybrid requires use_sparse: true)
+  top_k: 5
+  auto_filter: false       # If true, LLM automatically extracts metadata filters from every query.
+                           # Default false. Call rag.extract_filters(query) to let an agent decide.
+
+  # Optional second-stage reranking. Delete this block to turn it off.
+  # Retrieval fetches fetch_k candidates, the reranker scores each one against
+  # the query, and the best top_k are returned.
+  # rerank:
+  #   provider: "cross_encoder"        # "cross_encoder" (local, no API key) | "cohere" (hosted)
+  #   model: "BAAI/bge-reranker-base"  # cohere default: "rerank-v3.5"
+  #   fetch_k: 25                      # Candidates to rerank. Defaults to max(4 * top_k, 20).
+  #   # Requires: pip install ragwire[rerank]   (or ragwire[cohere])
+
+# =================================================================
+# Sources (optional, used by rag.sync())
+# =================================================================
+# Ingestion only ever adds. sync() reconciles instead: new files are
+# ingested, changed files replace their older version, and files that no
+# longer exist at any source are removed from the collection.
+# sources:
+#   - type: local
+#     path: "./documents"
+#     recursive: true
+#     # extensions: [".pdf", ".md"]   # defaults to the loader.extensions list
+#
+#   - type: s3                        # needs: pip install ragwire[s3]
+#     bucket: "my-filings"
+#     prefix: "2026/"
+#     cache_dir: ".ragwire_cache"     # objects are downloaded here first
+#     # region: "us-east-1"
+#     # aws_access_key_id: "${AWS_ACCESS_KEY_ID}"      # omit to use the
+#     # aws_secret_access_key: "${AWS_SECRET_ACCESS_KEY}"  # normal boto3 chain
+
+# =================================================================
+# Answer generation (rag.query)
+# =================================================================
+# Entirely optional. Omit the block and these defaults apply.
+generation:
+  max_context_chars: 12000   # Total budget for the source block sent to the LLM.
+                             # Five default chunks overflow most context windows,
+                             # so chunks past the budget are dropped rather than
+                             # silently truncated by the provider.
+  # system_prompt: |         # Override the grounding instructions. Use {sentinel}
+  #   ...                    # where the model should be told to refuse.
+
+# =================================================================
+# Logging
+# =================================================================
+logging:
+  level: "INFO"
+  console_output: true
+  colored: true
+  # log_file: "logs/rag.log"

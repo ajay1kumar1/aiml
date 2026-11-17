@@ -1,0 +1,113 @@
+site_name: RAGWire
+site_description: Production-grade RAG toolkit for document ingestion and retrieval with hybrid search support
+site_url: https://laxmimerit.github.io/RAGWire
+repo_url: https://github.com/laxmimerit/RAGWire
+repo_name: laxmimerit/RAGWire
+edit_uri: edit/main/docs/
+
+theme:
+  name: material
+  logo: assets/ragwire.png
+  favicon: assets/ragwire.png
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.highlight
+    - search.suggest
+    - content.code.copy
+    - content.code.annotate
+
+plugins:
+  - search
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - tables
+  - toc:
+      permalink: true
+
+nav:
+  - Home: index.md
+  - Getting Started:
+    - Installation & Setup: setup.md
+    - Quick Tutorial: tutorial.md
+    - Metadata & Filtering: metadata.md
+    - Custom Metadata: custom_metadata.md
+    - Metadata Schema Examples: metadata_schemas.md
+    - RAG Agent: rag_agent.md
+  - Providers:
+    - Ollama (Local): ollama.md
+    - OpenAI: openai.md
+    - OpenRouter: openrouter.md
+    - Google Gemini: gemini.md
+    - Groq: groq.md
+    - Anthropic: anthropic.md
+    - HuggingFace: huggingface.md
+    - FastEmbed: fastembed.md
+  - Cookbook:
+    - Answer Questions: cookbook/answering_questions.md
+    - MCP Server: cookbook/mcp_server.md
+    - Switch Providers: cookbook/switch_providers.md
+    - Local File Storage: cookbook/local_storage.md
+    - Qdrant Cloud (Free Tier): cookbook/qdrant_cloud.md
+    - Multi-Collection Setup: cookbook/multi_collection.md
+    - Update Documents: cookbook/update_documents.md
+    - Sync Sources: cookbook/syncing_sources.md
+    - Tune Retrieval Quality: cookbook/tune_retrieval.md
+    - Reranking: cookbook/reranking.md
+    - Measure Retrieval Quality: cookbook/evaluation.md
+    - Inspect Your Collection: cookbook/inspect_collection.md
+    - Diverse Results (MMR): cookbook/mmr.md
+    - Preview Documents: cookbook/preview_documents.md
+    - Logging Setup: cookbook/logging.md
+    - LangSmith Tracing: cookbook/langsmith.md
+    - Metadata-Aware Chatbot: cookbook/filtered_chatbot.md
+  - Architecture:
+    - System Overview: architecture/overview.md
+    - Ingestion Pipeline: architecture/ingestion_pipeline.md
+    - Retrieval Pipeline: architecture/retrieval_pipeline.md
+    - Metadata Extraction: architecture/metadata_extraction.md
+    - Component Map: architecture/component_map.md
+  - API Reference: api_reference.md
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/laxmimerit/RAGWire
+    - icon: fontawesome/brands/youtube
+      link: https://youtube.com/kgptalkie
+    - icon: fontawesome/solid/globe
+      link: https://kgptalkie.com
+    - icon: fontawesome/brands/python
+      link: https://pypi.org/project/ragwire
+
+copyright: Copyright &copy; 2026 KGP Talkie Private Limited

@@ -1,0 +1,113 @@
+"""
+RAGWire: Production-grade RAG toolkit for document ingestion and retrieval.
+
+A clean, installable Python toolkit providing:
+- Document loading and conversion (PDF, DOCX, XLSX, etc.)
+- Text splitting and chunking
+- LLM-based metadata extraction
+- Multiple embedding provider support (OpenAI, HuggingFace, Ollama, Google)
+- Qdrant vector store with hybrid search
+- Advanced retrieval strategies (similarity, MMR, hybrid)
+
+Example:
+    >>> from ragwire import RAGWire
+    >>>
+    >>> rag = RAGWire("config.yaml")
+    >>> stats = rag.ingest_documents(["doc.pdf"])
+    >>> results = rag.retrieve("What is the revenue?")
+    >>> for doc in results:
+    ...     print(doc.page_content)
+
+Author: KGP Talkie Private Limited
+License: MIT
+"""
+
+from importlib.metadata import version, PackageNotFoundError
+
+try:
+    __version__ = version("ragwire")
+except PackageNotFoundError:
+    __version__ = "1.6.0"
+
+__author__ = "KGP Talkie Private Limited"
+
+from .core.config import Config
+from .core.pipeline import RAGWire, IngestStats, IngestError, SyncStats
+from .metadata.schema import DocumentMetadata
+from .metadata.extractor import MetadataExtractor, FinancialMetadata
+from .loaders.markitdown_loader import MarkItDownLoader
+from .loaders.page_loader import PageLoader
+from .processing.splitter import (
+    PageSplitter,
+    get_splitter,
+    get_markdown_splitter,
+    get_code_splitter,
+)
+from .processing.hashing import sha256_text, sha256_file_from_path, sha256_chunk
+from .embeddings.factory import get_embedding
+from .vectorstores.qdrant_store import QdrantStore
+from .retriever.hybrid import get_retriever, hybrid_search, mmr_search
+from .retriever.rerank import (
+    BaseReranker,
+    CohereReranker,
+    CrossEncoderReranker,
+    get_reranker,
+)
+from .utils.logging import setup_logging, setup_colored_logging, get_logger
+from .eval import GoldenSet, GoldenQuery, evaluate, sweep
+from .generation import Answer, Citation, AnswerGenerator
+from .sources import Source, LocalSource, build_sources
+
+__all__ = [
+    # Core
+    "Config",
+    "RAGWire",
+    "IngestStats",
+    "IngestError",
+    "SyncStats",
+    # Sources
+    "Source",
+    "LocalSource",
+    "build_sources",
+    # Metadata
+    "DocumentMetadata",
+    "MetadataExtractor",
+    "FinancialMetadata",
+    # Loaders
+    "MarkItDownLoader",
+    "PageLoader",
+    # Processing
+    "PageSplitter",
+    "get_splitter",
+    "get_markdown_splitter",
+    "get_code_splitter",
+    "sha256_text",
+    "sha256_file_from_path",
+    "sha256_chunk",
+    # Embeddings
+    "get_embedding",
+    # Vector Stores
+    "QdrantStore",
+    # Retrieval
+    "get_retriever",
+    "hybrid_search",
+    "mmr_search",
+    # Reranking
+    "BaseReranker",
+    "CohereReranker",
+    "CrossEncoderReranker",
+    "get_reranker",
+    # Generation
+    "Answer",
+    "Citation",
+    "AnswerGenerator",
+    # Evaluation
+    "GoldenSet",
+    "GoldenQuery",
+    "evaluate",
+    "sweep",
+    # Utilities
+    "setup_logging",
+    "setup_colored_logging",
+    "get_logger",
+]
